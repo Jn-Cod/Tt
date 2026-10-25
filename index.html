@@ -14,7 +14,7 @@
     width: 100vw;
   }
 
-  /* ===== VIDEO DE FONDO (YouTube) ===== */
+  /* ===== VIDEO DE FONDO ===== */
   #video-bg {
     position: fixed;
     inset: 0;
@@ -109,18 +109,39 @@
     font-size: clamp(0.8em, 3.4vw, 0.92em);
     margin: 0;
   }
+
+  /* ===== BOTÓN ACTIVAR SONIDO ===== */
+  #sound-btn {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: 14px;
+    z-index: 10;
+    background: linear-gradient(135deg, #d45d79, #b84a64);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: clamp(0.78em, 3.2vw, 0.88em);
+    font-family: inherit;
+    box-shadow: 0 4px 18px rgba(212,93,121,0.5);
+    transition: transform 0.2s;
+    min-height: 44px;
+  }
+  #sound-btn:active { transform: scale(0.96); }
+  #sound-btn.activo {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+  }
 </style>
 </head>
 <body>
 
-<!-- Video de fondo: nuevo ID 935cXSVohNY, empieza en 0:16, en bucle -->
+<!-- Botón para activar sonido (obligatorio por políticas del navegador) -->
+<button id="sound-btn" aria-label="Activar sonido">🔊 Activar sonido</button>
+
+<!-- Video de fondo con la API de YouTube -->
 <div id="video-bg">
-  <iframe
-    src="https://www.youtube.com/embed/935cXSVohNY?autoplay=1&mute=1&loop=1&playlist=935cXSVohNY&start=16&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&playsinline=1&iv_load_policy=3"
-    title="Fondo"
-    allow="autoplay; encrypted-media; picture-in-picture"
-    allowfullscreen="false">
-  </iframe>
+  <div id="yt-player"></div>
 </div>
 <div id="video-overlay"></div>
 
@@ -148,6 +169,85 @@
   </p>
 </div>
 
+<!-- API de YouTube -->
+<script>
+  // Cargar la API de IFrame de YouTube
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  var player;
+  var videoReady = false;
+
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('yt-player', {
+      videoId: '935cXSVohNY',
+      playerVars: {
+        autoplay: 1,
+        mute: 1,            // Obligatorio para autoplay inicial
+        start: 10,          // Empieza en el segundo 10
+        loop: 1,
+        playlist: '935cXSVohNY',
+        controls: 0,
+        showinfo: 0,
+        rel: 0,
+        modestbranding: 1,
+        disablekb: 1,
+        playsinline: 1,
+        iv_load_policy: 3,
+        fs: 0               // Sin botón de pantalla completa
+      },
+      events: {
+        onReady: function(event) {
+          videoReady = true;
+          event.target.playVideo();
+          // Estilo del iframe para que cubra la pantalla
+          const iframe = event.target.getIframe();
+          iframe.style.position = 'absolute';
+          iframe.style.top = '50%';
+          iframe.style.left = '50%';
+          iframe.style.width = '100vw';
+          iframe.style.height = '56.25vw';
+          iframe.style.minHeight = '100vh';
+          iframe.style.minWidth = '177.78vh';
+          iframe.style.transform = 'translate(-50%, -50%) scale(1.15)';
+          iframe.style.border = 'none';
+          iframe.style.pointerEvents = 'none';  // No se puede clicar/pausar
+        },
+        onStateChange: function(event) {
+          // Si por alguna razón se pausa, forzar reproducción
+          if (event.data === YT.PlayerState.PAUSED) {
+            event.target.playVideo();
+          }
+        }
+      }
+    });
+  }
+
+  // Botón para activar sonido
+  const soundBtn = document.getElementById('sound-btn');
+  let soundOn = false;
+
+  soundBtn.addEventListener('click', () => {
+    if (!player || !videoReady) return;
+    if (!soundOn) {
+      player.unMute();
+      player.setVolume(80);
+      player.seekTo(10, true);
+      player.playVideo();
+      soundOn = true;
+      soundBtn.textContent = '🔇 Silenciar';
+      soundBtn.classList.add('activo');
+    } else {
+      player.mute();
+      soundOn = false;
+      soundBtn.textContent = '🔊 Activar sonido';
+      soundBtn.classList.remove('activo');
+    }
+  });
+</script>
+
 <script type="importmap">
 {
   "imports": {
@@ -161,7 +261,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ===== Escena Three.js (ramo 3D) =====
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x1a0510, 0.05);
 
@@ -189,7 +288,6 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// Sin controles de cámara
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
@@ -202,7 +300,6 @@ controls.enableRotate = false;
 controls.minPolarAngle = 0.6;
 controls.maxPolarAngle = 1.55;
 
-// Luces
 scene.add(new THREE.AmbientLight(0xffd6e0, 0.6));
 const keyLight = new THREE.DirectionalLight(0xfff2e6, 3.0);
 keyLight.position.set(4, 8, 5);
@@ -223,7 +320,6 @@ const rimLight = new THREE.PointLight(0xc8a2ff, 2.5, 20, 2);
 rimLight.position.set(0, 4, -6);
 scene.add(rimLight);
 
-// Suelo
 const floor = new THREE.Mesh(
   new THREE.CircleGeometry(12, 64),
   new THREE.MeshStandardMaterial({
@@ -235,7 +331,6 @@ floor.position.y = -0.02;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Pétalo
 function createPetalGeometry(width, height, cup) {
   const shape = new THREE.Shape();
   shape.moveTo(0, 0);
@@ -253,12 +348,11 @@ function createPetalGeometry(width, height, cup) {
   return geo;
 }
 
-// Tulipán
 function createTulip(color, scale = 1) {
   const group = new THREE.Group();
   const petalMat = new THREE.MeshPhysicalMaterial({
     color, roughness: 0.42, metalness: 0.0,
-    clearcoat: 0.55, clearcoatRoughness: 0.35,
+    clearcoat: 0.55, clearcoatRoughness new: 0.35,
     sheen: 0.8, sheenColor: 0xffffff, sheenRoughness: 0.5,
     side: THREE.DoubleSide, transmission: 0.08, thickness: 0.4, ior: 1.4
   });
@@ -288,14 +382,13 @@ function createTulip(color, scale = 1) {
     po.position.copy(st.position).add(new THREE.Vector3(0, 0.09*scale, 0));
     group.add(po);
   }
-  const pistil = new THREE.Mesh(new THREE.SphereGeometry(0.045*scale, 12, 12),
+  const pistil = THREE.Mesh(new THREE.SphereGeometry(0.045*scale, 12, 12),
     new THREE.MeshStandardMaterial({ color: 0x3d2414, roughness: 0.7 }));
   pistil.position.y = 0.09*scale;
   group.add(pistil);
   return group;
 }
 
-// Tallo
 function createStem(height, curveAmount) {
   const group = new THREE.Group();
   const curve = new THREE.CatmullRomCurve3([
@@ -344,7 +437,6 @@ function createStem(height, curveAmount) {
   return { group, topPoint: curve.getPoint(1) };
 }
 
-// Ramo
 const bouquet = new THREE.Group();
 scene.add(bouquet);
 
@@ -378,7 +470,6 @@ tulipData.forEach((data, i) => {
   bouquet.add(t);
 });
 
-// Envoltura
 function createWrap() {
   const g = new THREE.Group();
   const mat = new THREE.MeshPhysicalMaterial({
@@ -417,7 +508,6 @@ bouquet.add(wrap);
 bouquet.position.set(0, 0.3, 0);
 bouquet.scale.set(1.3, 1.3, 1.3);
 
-// Partículas
 const pc = 160;
 const pg = new THREE.BufferGeometry();
 const pp = new Float32Array(pc*3);
@@ -438,7 +528,6 @@ const particles = new THREE.Points(pg, new THREE.PointsMaterial({
 }));
 scene.add(particles);
 
-// Animación
 const clock = new THREE.Clock();
 const bouquetBaseY = bouquet.position.y;
 
