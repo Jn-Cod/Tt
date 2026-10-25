@@ -18,23 +18,22 @@
   #video-bg {
     position: fixed;
     inset: 0;
-    z-index: 0;              /* Detrás de todo */
+    z-index: 0;
     overflow: hidden;
-    pointer-events: none;    /* No se puede hacer clic → no se puede pausar */
+    pointer-events: none;
   }
   #video-bg iframe {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 100vw;
-    height: 56.25vw;         /* 16:9 */
+    height: 56.25vw;
     min-height: 100vh;
-    min-width: 177.78vh;     /* 16:9 */
-    transform: translate(-50%, -50%) scale(1.15); /* Zoom para cubrir pantalla */
+    min-width: 177.78vh;
+    transform: translate(-50%, -50%) scale(1.15);
     border: none;
-    pointer-events: none;    /* Refuerzo: sin clics */
+    pointer-events: none;
   }
-  /* Capa oscura encima del video para que el texto se lea */
   #video-overlay {
     position: fixed;
     inset: 0;
@@ -46,8 +45,8 @@
   /* ===== RAMO 3D ===== */
   #canvas-container {
     position: fixed; inset: 0;
-    z-index: 2;              /* Encima del overlay, detrás de stickers */
-    pointer-events: none;    /* Para que no bloquee toques en móvil */
+    z-index: 2;
+    pointer-events: none;
   }
 
   /* ===== STICKER PRINCIPAL ===== */
@@ -114,10 +113,10 @@
 </head>
 <body>
 
-<!-- Video de fondo: empieza en 0:16, en bucle, sin controles, sin clics -->
+<!-- Video de fondo: nuevo ID 935cXSVohNY, empieza en 0:16, en bucle -->
 <div id="video-bg">
   <iframe
-    src="https://www.youtube.com/embed/Ho-Eh-91qk8?autoplay=1&mute=1&loop=1&playlist=Ho-Eh-91qk8&start=16&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&playsinline=1&iv_load_policy=3"
+    src="https://www.youtube.com/embed/935cXSVohNY?autoplay=1&mute=1&loop=1&playlist=935cXSVohNY&start=16&controls=0&showinfo=0&rel=0&modestbranding=1&disablekb=1&playsinline=1&iv_load_policy=3"
     title="Fondo"
     allow="autoplay; encrypted-media; picture-in-picture"
     allowfullscreen="false">
@@ -190,7 +189,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// Sin controles de cámara (queremos que el ramo solo flote, no que el usuario lo gire)
+// Sin controles de cámara
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
@@ -199,7 +198,7 @@ controls.autoRotateSpeed = 0.5;
 controls.target.set(0, 1.5, 0);
 controls.enablePan = false;
 controls.enableZoom = false;
-controls.enableRotate = false; // Sin interacción del usuario
+controls.enableRotate = false;
 controls.minPolarAngle = 0.6;
 controls.maxPolarAngle = 1.55;
 
@@ -325,11 +324,10 @@ function createStem(height, curveAmount) {
   ls.bezierCurveTo(0.12, 0.15, 0.16, 0.5, 0.05, 0.85);
   ls.bezierCurveTo(0.0, 0.9, -0.03, 0.85, -0.02, 0.75);
   ls.bezierCurveTo(-0.04, 0.45, -0.06, 0.15, 0, 0);
-  const lg = new THREE.ShapeGeometry(ls, );
-16);
-  const lp = lg.attributes.position ;
- t  for (let i = 0; i < lp.count.position; i++) {
-   .copy const y = lp.getY(i);
+  const lg = new THREE.ShapeGeometry(ls, 16);
+  const lp = lg.attributes.position;
+  for (let i = 0; i < lp.count; i++) {
+    const y = lp.getY(i);
     lp.setZ(i, Math.sin(y*2.5)*0.05);
   }
   lg.computeVertexNormals();
@@ -370,7 +368,8 @@ tulipData.forEach((data, i) => {
   const s = createStem(data.h, data.c);
   s.group.position.set(data.x, 0, data.z);
   bouquet.add(s.group);
-  const t = createTulip(color, scale(s.topPoint);
+  const t = createTulip(color, scale);
+  t.position.copy(s.topPoint);
   t.position.x += data.x;
   t.position.z += data.z;
   t.rotation.x = data.tilt;
@@ -429,9 +428,9 @@ for (let i = 0; i < pc; i++) {
   pp[i*3+1] = Math.random()*6;
   pp[i*3+2] = (Math.random()-0.5)*12;
   const c = palette[Math.floor(Math.random()*palette.length)];
-  pcolors[i*3] = c.r; pcolors[i*3+1] = c.g; pcolors[i*3+2] = c.bEl;
+  pcolors[i*3] = c.r; pcolors[i*3+1] = c.g; pcolors[i*3+2] = c.b;
 }
-pg.setAttribute('position', new THREE video.BufferAttribute(pp, 3));
+pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
 pg.setAttribute('color', new THREE.BufferAttribute(pcolors, 3));
 const particles = new THREE.Points(pg, new THREE.PointsMaterial({
   size: 0.045, vertexColors: true, transparent: true, opacity: 0.85,
