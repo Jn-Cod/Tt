@@ -14,7 +14,7 @@
     width: 100vw;
   }
 
-  /* ===== VIDEO DE FONDO ===== */
+  /* VIDEO: capa más baja, fija, sin clics */
   #video-bg {
     position: fixed;
     inset: 0;
@@ -22,17 +22,19 @@
     overflow: hidden;
     pointer-events: none;
   }
-  #video-bg iframe {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100vw;
-    height: 56.25vw;
-    min-height: 100vh;
-    min-width: 177.78vh;
-    transform: translate(-50%, -50%) scale(1.15);
-    border: none;
-    pointer-events: none;
+  /* El iframe que inyecta la API de YouTube */
+  #video-bg iframe,
+  #yt-player iframe {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vw !important;
+    height: 56.25vw !important;
+    min-height: 100vh !important;
+    min-width: 177.78vh !important;
+    transform: translate(-50%, -50%) scale(1.15) !important;
+    border: none !important;
+    pointer-events: none !important;
   }
   #video-overlay {
     position: fixed;
@@ -42,14 +44,15 @@
     pointer-events: none;
   }
 
-  /* ===== RAMO 3D ===== */
+  /* RAMO 3D: ENCIMA del video y del overlay */
   #canvas-container {
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     z-index: 2;
     pointer-events: none;
   }
 
-  /* ===== STICKER PRINCIPAL ===== */
+  /* STICKER PRINCIPAL */
   #luffy-main {
     position: fixed;
     top: 5%;
@@ -66,7 +69,7 @@
     50%     { transform: translateX(-50%) translateY(-10px) rotate(2deg); }
   }
 
-  /* ===== STICKERS DECORATIVOS ===== */
+  /* STICKERS DECORATIVOS */
   .deco {
     position: fixed; z-index: 3;
     filter: drop-shadow(0 5px 14px rgba(255,182,193,0.5));
@@ -81,7 +84,7 @@
     50%     { transform: translateY(-8px) rotate(3deg); }
   }
 
-  /* ===== CARTA ===== */
+  /* CARTA */
   #letter {
     position: fixed;
     bottom: max(12px, env(safe-area-inset-bottom));
@@ -110,7 +113,7 @@
     margin: 0;
   }
 
-  /* ===== BOTÓN ACTIVAR SONIDO ===== */
+  /* BOTÓN SONIDO */
   #sound-btn {
     position: fixed;
     top: max(14px, env(safe-area-inset-top));
@@ -129,36 +132,28 @@
     min-height: 44px;
   }
   #sound-btn:active { transform: scale(0.96); }
-  #sound-btn.activo {
-    background: linear-gradient(135deg, #4caf50, #388e3c);
-  }
+  #sound-btn.activo { background: linear-gradient(135deg, #4caf50, #388e3c); }
 </style>
 </head>
 <body>
 
-<!-- Botón para activar sonido (obligatorio por políticas del navegador) -->
 <button id="sound-btn" aria-label="Activar sonido">🔊 Activar sonido</button>
 
-<!-- Video de fondo con la API de YouTube -->
 <div id="video-bg">
   <div id="yt-player"></div>
 </div>
 <div id="video-overlay"></div>
 
-<!-- Sticker principal -->
 <img id="luffy-main"
      src="https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyeGhqNjdzdjRscG4xaGhubGVkeW05M2R2MTRpbG93NjM5cGlldWFkdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/2aKoKy8bAWJr8bBMak/giphy.webp"
      alt="Luffy">
 
-<!-- Stickers decorativos -->
 <img class="deco deco-1" src="https://media.giphy.com/media/p8UwphhvFXKrxS42fk/giphy.gif" alt="deco1">
 <img class="deco deco-2" src="https://media.giphy.com/media/x2GRI1mBm4kBXv0njJ/giphy.gif" alt="deco2">
 <img class="deco deco-3" src="https://media.giphy.com/media/H0hCZKoldTWPzil50u/giphy.gif" alt="deco3">
 
-<!-- Ramo 3D -->
 <div id="canvas-container"></div>
 
-<!-- Carta -->
 <div id="letter">
   <h2>☀️ Buenos días, mi amor ☀️</h2>
   <p>
@@ -169,9 +164,7 @@
   </p>
 </div>
 
-<!-- API de YouTube -->
 <script>
-  // Cargar la API de IFrame de YouTube
   var tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -185,8 +178,8 @@
       videoId: '935cXSVohNY',
       playerVars: {
         autoplay: 1,
-        mute: 1,            // Obligatorio para autoplay inicial
-        start: 10,          // Empieza en el segundo 10
+        mute: 1,
+        start: 10,
         loop: 1,
         playlist: '935cXSVohNY',
         controls: 0,
@@ -196,13 +189,13 @@
         disablekb: 1,
         playsinline: 1,
         iv_load_policy: 3,
-        fs: 0               // Sin botón de pantalla completa
+        fs: 0
       },
       events: {
         onReady: function(event) {
           videoReady = true;
           event.target.playVideo();
-          // Estilo del iframe para que cubra la pantalla
+          // Forzar el estilo del iframe inyectado
           const iframe = event.target.getIframe();
           iframe.style.position = 'absolute';
           iframe.style.top = '50%';
@@ -213,10 +206,10 @@
           iframe.style.minWidth = '177.78vh';
           iframe.style.transform = 'translate(-50%, -50%) scale(1.15)';
           iframe.style.border = 'none';
-          iframe.style.pointerEvents = 'none';  // No se puede clicar/pausar
+          iframe.style.pointerEvents = 'none';
+          iframe.style.zIndex = '0';
         },
         onStateChange: function(event) {
-          // Si por alguna razón se pausa, forzar reproducción
           if (event.data === YT.PlayerState.PAUSED) {
             event.target.playVideo();
           }
@@ -225,7 +218,6 @@
     });
   }
 
-  // Botón para activar sonido
   const soundBtn = document.getElementById('sound-btn');
   let soundOn = false;
 
@@ -286,6 +278,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
+// IMPORTANTE: el canvas debe ser transparente para ver el video detrás
+renderer.setClearColor(0x000000, 0);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -320,10 +314,12 @@ const rimLight = new THREE.PointLight(0xc8a2ff, 2.5, 20, 2);
 rimLight.position.set(0, 4, -6);
 scene.add(rimLight);
 
+// Suelo semitransparente para no tapar el video
 const floor = new THREE.Mesh(
   new THREE.CircleGeometry(12, 64),
   new THREE.MeshStandardMaterial({
-    color: 0x2a1020, roughness: 0.35, metalness: 0.6, envMapIntensity: 0.8
+    color: 0x2a1020, roughness: 0.35, metalness: 0.6,
+    envMapIntensity: 0.8, transparent: true, opacity: 0.4
   })
 );
 floor.rotation.x = -Math.PI/2;
@@ -352,7 +348,7 @@ function createTulip(color, scale = 1) {
   const group = new THREE.Group();
   const petalMat = new THREE.MeshPhysicalMaterial({
     color, roughness: 0.42, metalness: 0.0,
-    clearcoat: 0.55, clearcoatRoughness new: 0.35,
+    clearcoat: 0.55, clearcoatRoughness: 0.35,
     sheen: 0.8, sheenColor: 0xffffff, sheenRoughness: 0.5,
     side: THREE.DoubleSide, transmission: 0.08, thickness: 0.4, ior: 1.4
   });
@@ -382,7 +378,7 @@ function createTulip(color, scale = 1) {
     po.position.copy(st.position).add(new THREE.Vector3(0, 0.09*scale, 0));
     group.add(po);
   }
-  const pistil = THREE.Mesh(new THREE.SphereGeometry(0.045*scale, 12, 12),
+  const pistil = new THREE.Mesh(new THREE.SphereGeometry(0.045*scale, 12, 12),
     new THREE.MeshStandardMaterial({ color: 0x3d2414, roughness: 0.7 }));
   pistil.position.y = 0.09*scale;
   group.add(pistil);
